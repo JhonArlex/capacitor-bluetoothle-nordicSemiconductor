@@ -1,3 +1,4 @@
 export interface BluetoothLeNordicPlugin {
-  echo(options: { value: string }): Promise<{ value: string }>;
+  start(option: {value: string}): Promise<{value: string}>;
+  stop(): Promise<{value: string}>;
 }
