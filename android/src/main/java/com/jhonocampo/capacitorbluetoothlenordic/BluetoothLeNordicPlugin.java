@@ -2,6 +2,8 @@ package com.jhonocampo.capacitorbluetoothlenordic;
 
 import android.Manifest;
 
+import androidx.annotation.NonNull;
+
 import com.getcapacitor.JSObject;
 import com.getcapacitor.PermissionState;
 import com.getcapacitor.Plugin;
@@ -10,6 +12,10 @@ import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
 import com.getcapacitor.annotation.PermissionCallback;
+
+import no.nordicsemi.android.support.v18.scanner.BluetoothLeScannerCompat;
+import no.nordicsemi.android.support.v18.scanner.ScanCallback;
+import no.nordicsemi.android.support.v18.scanner.ScanResult;
 
 @CapacitorPlugin(
     name = "BluetoothLeNordic",
@@ -31,21 +37,34 @@ import com.getcapacitor.annotation.PermissionCallback;
     }
 )
 public class BluetoothLeNordicPlugin extends Plugin {
+    BluetoothLeScannerCompat scanner = BluetoothLeScannerCompat.getScanner();
+    public ScanCallback scanCallback = new ScanCallback() {
+        @Override
+        public void onScanResult(int callbackType, @NonNull ScanResult result) {
+            super.onScanResult(callbackType, result);
+            byte[] manufacturerData = result.getScanRecord().getManufacturerSpecificData(0x5900);
+            String data = byteArrayToHexString(manufacturerData);
+            if (data != null) {
+                JSObject json = new JSObject();
+                json.put("addres", result.getDevice().getAddress());
+                json.put("manufacturerData", data);
+                notifyListeners("readBeacon", json);
+            }
 
-    private BluetoothLeNordic implementation = new BluetoothLeNordic();
-
+        }
+    };
     @PluginMethod
     public void scan(PluginCall call) {
         if (getPermissionState("location") != PermissionState.GRANTED) {
             requestPermissionForAlias("location", call, "locationPermsCallback");
         } else {
-            implementation.scan();
+            scan();
         }
     }
 
     @PluginMethod
     public void stop(PluginCall call) {
-        implementation.stop();
+        stop();
     }
 
 
@@ -61,5 +80,25 @@ public class BluetoothLeNordicPlugin extends Plugin {
         } else {
             call.reject("Permission is required to take a picture");
         }
+    }
+
+    public static String byteArrayToHexString(final byte[] bytes) {
+        if (bytes == null) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        for(byte b : bytes){
+            sb.append(String.format("%02x", b&0xff));
+        }
+        return sb.toString();
+    }
+
+
+    public void scan() {
+        scanner.startScan(null, null, scanCallback);
+    }
+
+    public void stop() {
+        scanner.stopScan(scanCallback);
     }
 }
