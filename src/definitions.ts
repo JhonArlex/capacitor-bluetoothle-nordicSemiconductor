@@ -1,4 +1,4 @@
 export interface BluetoothLeNordicPlugin {
-  scan(option: {value: string}): Promise<{value: string}>;
+  scan(option: {manufacturerId: number}): Promise<{value: string}>;
   stop(): Promise<{value: string}>;
 }

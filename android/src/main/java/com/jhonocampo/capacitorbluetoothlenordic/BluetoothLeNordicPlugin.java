@@ -38,11 +38,12 @@ import no.nordicsemi.android.support.v18.scanner.ScanResult;
 )
 public class BluetoothLeNordicPlugin extends Plugin {
     BluetoothLeScannerCompat scanner = BluetoothLeScannerCompat.getScanner();
+    int manufacturerId = 0;
     public ScanCallback scanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, @NonNull ScanResult result) {
             super.onScanResult(callbackType, result);
-            byte[] manufacturerData = result.getScanRecord().getManufacturerSpecificData(0x5900);
+            byte[] manufacturerData = result.getScanRecord().getManufacturerSpecificData(manufacturerId);
             String data = byteArrayToHexString(manufacturerData);
             if (data != null) {
                 JSObject json = new JSObject();
@@ -55,6 +56,7 @@ public class BluetoothLeNordicPlugin extends Plugin {
     };
     @PluginMethod
     public void scan(PluginCall call) {
+        manufacturerId = call.getInt("manufacturerId");
         if (getPermissionState("location") != PermissionState.GRANTED) {
             requestPermissionForAlias("location", call, "locationPermsCallback");
         } else {

@@ -24,12 +24,12 @@ npx cap sync
 ### scan(...)
 
 ```typescript
-scan(option: { value: string; }) => any
+scan(option: { manufacturerId: number; }) => any
 ```
 
-| Param        | Type                            |
-| ------------ | ------------------------------- |
-| **`option`** | <code>{ value: string; }</code> |
+| Param        | Type                                     |
+| ------------ | ---------------------------------------- |
+| **`option`** | <code>{ manufacturerId: number; }</code> |
 
 **Returns:** <code>any</code>
 
